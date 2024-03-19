@@ -87,11 +87,11 @@ app.get('/cookie',(req, res, next) => {
     const name = "dote10";
 
     //cookie 생성
-    // res.cookie('name',encodeURIComponent(name),{
-    //     expires: new Date('2024-04-22'),
-    //     httpOnly:true,
-    //     path:'/cookie',
-    // });
+    res.cookie('name',encodeURIComponent(name),{
+        expires: new Date('2024-04-22'),
+        httpOnly:true,
+        path:'/cookie',
+    });
 
     res.send("hello cookie");    
 });
