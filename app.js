@@ -3,6 +3,8 @@ const path = require('path');
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+const multer = require('multer');
+const fs = require('fs');
 
 const app = express();
 
@@ -45,7 +47,7 @@ app.use(session({
 app.use('/',express.static(path.join(__dirname,'static')));
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
-app.use((req, res, next) => {
+app.use('/about',(req, res, next) => {
     req.data = '데이터 넣기';
     next();
   },(req, res, next) => {
@@ -53,6 +55,33 @@ app.use((req, res, next) => {
     next();
   });
 
+/**
+ * 현재 프로젝트 폴더 
+ * 바로 아래에 uploads 폴더가 없으면
+ * uploads폴더를 생성한다. 
+ */
+try{
+    fs.readdirSync('uploads');
+} catch (error){
+    console.log('uploads 폴더가 없어 uploads 폴더를 생성합니다.');
+    fs.mkdirSync('uploads');
+}
+
+//사진을 업로드하기위한
+//multer 설정
+const upload = multer({
+    storage: multer.diskStorage({
+        destination(req,file,done){
+            done(null,'uploads/');
+        },
+        filename(req,file,done){
+            const ext = path.extname(file.originalname);
+            done(null,path.basename(file.originalname,ext) + Date.now() + ext);
+        },
+    }),
+    // 5MB 이하의 파일만 업로드 가능
+    limits: {fileSize: 5 * 1024 * 1024},
+})
 
 
 
@@ -107,7 +136,7 @@ app.get('/cookie/clear',(req, res, next) => {
     console.log(req.cookies); 
 
 
-    res.send("hello cookie");    
+    res.send("bye cookie");    
 });
 
 
@@ -123,12 +152,38 @@ app.get('/category/:name',(req, res) =>{
 	res.send(`매개변수 name= ${req.params.name}를 받았습니다.`);
 });
 
+/**
+ * 이미지 한장을 upload
+ */
+app.get('/upload',(req,res)=>{
+    res.sendFile(path.join(__dirname,'multilpart.html'));
+})
+
+
+app.post('/upload/sigle',upload.single('image'),(req,res)=>{
+    console.log(req.file);
+    res.send('ok');
+});
+
+app.post('/upload/multi',upload.array('image'),(req,res)=>{
+    console.log(req.files);
+    res.send('ok');
+});
+
+app.post('/upload/fields',upload.fields([{name:'image1'},{name:'image2'},{name:'image3'}]),
+(req,res)=>{
+    console.log(req.files);
+    res.send('ok');
+});
+
 
 // app.get('*',(req, res) =>{
 // 	res.send('모든 get 요청에 응답하는 라우터 입니다.');
 // });
 
 
+
+// 에러 처리
 app.use((req,res,next)=>{
     res.status(404).send('404 에러입니다.');
 })
