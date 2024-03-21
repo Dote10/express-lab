@@ -7,8 +7,10 @@ const express = require('express');
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-
 const fs = require('fs');
+const nunjucks = require('nunjucks');
+
+const {sequelize} = require('./models');
 
 //라우터 임포트
 const indexRouter = require('./routes');
@@ -19,6 +21,24 @@ const app = express();
 // 서버에 port라는 변수를 심는다.
 // 전역 변수의 개념 
 app.set('port',process.env.PORT||3400);
+app.set('View engine','html');
+
+//템플릿 엔진 등록
+nunjucks.configure('views',{
+    express:app,
+    watch:true,
+});
+
+//시퀄라이즈 연결
+sequelize.sync({force: false})
+    .then(() =>{
+        console.log('데이터베이스 연결 성공');
+    })
+    .catch((err) => {
+        console.log(err);
+    });
+
+
 
 // 미들웨어 등록
 app.use((req, res,next) => {
@@ -52,7 +72,7 @@ app.use(session({
     },
     name:'session-cookie',
 }));
-app.use('/',express.static(path.join(__dirname,'static')));
+app.use('/',express.static(path.join(__dirname,'public')));
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use('/about',(req, res, next) => {
