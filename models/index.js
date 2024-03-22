@@ -13,19 +13,39 @@ const sequelize = new Sequelize(config.database,config.username,config.password,
 
 //모델 import
 const User = require('./user');
-const Comment = require('./comment.js');
+const Post = require('./post');
+const Hashtag = require('./hashtag');
+const PostHashtag = require('./postHashtag');
+const Comment = require('./comment');
+const Cash = require('./cash');
+
 
 //시퀄라이즈 인스턴스
 db.sequelize = sequelize;
 
 db.User = User;
+db.Post = Post;
+db.Hashtag = Hashtag;
+db.PostHashtag = PostHashtag;
 db.Comment = Comment;
+db.Cash = Cash;
+
 
 User.init(sequelize);
+Post.init(sequelize);
+Hashtag.init(sequelize);
+PostHashtag.init(sequelize);
 Comment.init(sequelize);
+Cash.init(sequelize);
+
 
 User.associate(db);
+Post.associate(db);
+Hashtag.associate(db);
+//PostHashtag.associate(db);
 Comment.associate(db);
+Cash.associate(db);
+
  
 // let sequelize;
 // if (config.use_env_variable) {
